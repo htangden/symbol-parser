@@ -8,6 +8,9 @@ class Node:
     def get_tree(self):
         pass
 
+    def diff(self):
+        pass
+    
     def __add__(self, other):
         if isinstance(other, int) or isinstance(other, float):
             other = Num(other)
@@ -60,6 +63,8 @@ class Num(Node):
     def get_tree(self):
         return f"{self.val}"
     
+    def diff(self):
+        return Num(0)
 
 
 class Symbol(Node):
@@ -74,6 +79,9 @@ class Symbol(Node):
     
     def get_tree(self):
         return f"{self.symbol}"
+    
+    def diff(self):
+        return Num(1)
     
     
 
@@ -96,6 +104,8 @@ class Add(Node):
         op2_space = " "*(spaces-op1+op2-1)
         return f"{row1_space}+ \n{op1_space}/{op2_space}\\\n{s}"  
 
+    def diff(self):
+        return Add(self.left.diff(), self.right.diff())
 
 
 class Mul(Node):
@@ -116,6 +126,9 @@ class Mul(Node):
         op2_space = " "*(spaces-op1+op2-1)
         row1_space = " "*((op1+spaces+op2)//2)
         return f"{row1_space}⋅ \n{op1_space}/{op2_space}\\\n{s}"  
+    
+    def diff(self):
+        return Add(Mul(self.left.diff(), self.right), Mul(self.left, self.right.diff()))
 
 
 
@@ -136,7 +149,6 @@ class Pow(Node):
         op1_space = " "*op1
         op2_space = " "*(spaces-op1+op2-1)
         return f"{row1_space}^ \n{op1_space}/{op2_space}\\\n{s}"   
-
 
 
 class Comp(Node):
@@ -162,8 +174,9 @@ class Expression:
 # print(tree.eval(10))
 
 x = Symbol()
-f = 2**x + x**3 + 2 * (x+3) + 2*x**4 + x**2
-print(f.get_tree())
+f = 3*x + x + x*x
+print(f)
+print(f.diff())
 
 
 
