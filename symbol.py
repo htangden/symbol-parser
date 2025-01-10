@@ -47,7 +47,6 @@ class Node:
         
 
 
-
 class Num(Node):
     def __init__(self, val):
         self.val = val
@@ -61,6 +60,8 @@ class Num(Node):
     def get_tree(self):
         return f"{self.val}"
     
+
+
 class Symbol(Node):
     def __init__(self, symbol: str = "x"):
         self.symbol = symbol
@@ -73,7 +74,6 @@ class Symbol(Node):
     
     def get_tree(self):
         return f"{self.symbol}"
-    
     
     
 
@@ -90,9 +90,13 @@ class Add(Node):
         return f"{self.left} + {self.right}"
     
     def get_tree(self):
-        s, spaces = newline_matching(self.left.get_tree(), self.right.get_tree())
-        spaces = " "*(spaces)
-        return f"{spaces}+ \n/{spaces}\\\n{s}"
+        s, spaces, op1, op2 = newline_matching(self.left.get_tree(), self.right.get_tree())
+        row1_space = " "*((op1+spaces+op2)//2)
+        op1_space = " "*op1
+        op2_space = " "*(spaces-op1+op2-1)
+        return f"{row1_space}+ \n{op1_space}/{op2_space}\\\n{s}"  
+
+
 
 class Mul(Node):
     
@@ -107,10 +111,14 @@ class Mul(Node):
         return f"({self.left})⋅({self.right})"
     
     def get_tree(self):
-        s, spaces = newline_matching(self.left.get_tree(), self.right.get_tree())
-        spaces = " "*(spaces)
-        return f"{spaces}⋅ \n/{spaces}\\\n{s}"   
-     
+        s, spaces, op1, op2 = newline_matching(self.left.get_tree(), self.right.get_tree())
+        op1_space = " "*op1
+        op2_space = " "*(spaces-op1+op2-1)
+        row1_space = " "*((op1+spaces+op2)//2)
+        return f"{row1_space}+ \n{op1_space}/{op2_space}\\\n{s}"  
+
+
+
 class Pow(Node):
     def __init__(self, base: Node, exp: Node):
         self.base = base
@@ -123,9 +131,13 @@ class Pow(Node):
         return f"({self.base})^({self.exp})"
     
     def get_tree(self):
-        s, spaces = newline_matching(self.base.get_tree(), self.exp.get_tree())
-        spaces = " "*spaces
-        return f"{spaces}^ \n/{spaces}\\\n{s}"   
+        s, spaces, op1, op2 = newline_matching(self.base.get_tree(), self.exp.get_tree())
+        row1_space = " "*((op1+spaces+op2)//2)
+        op1_space = " "*op1
+        op2_space = " "*(spaces-op1+op2-1)
+        return f"{row1_space}^ \n{op1_space}/{op2_space}\\\n{s}"   
+
+
 
 class Comp(Node):
 
@@ -136,7 +148,6 @@ class Comp(Node):
     def eval(self, x):
         pass
         
-
 
 
 class Expression:

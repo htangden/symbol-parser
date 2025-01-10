@@ -1,10 +1,13 @@
 def newline_matching(str1: str, str2: str):
-    arr1 = [s.strip() for s in str1.split("\n")]
-    arr2 = [s.strip() for s in str2.split("\n")]
+    arr1 = str1.split("\n")
+    arr2 = str2.split("\n")
 
     s = ""
 
     longest_arr1_element = len(max(arr1))
+
+    len_operator_1 = len(arr1[0])-2
+    len_operator_2 = len(arr2[0])-2
     length = max(len(arr1), len(arr2))
 
     for i in range(length):
@@ -20,4 +23,4 @@ def newline_matching(str1: str, str2: str):
 
         s += ("\n")
 
-    return s, longest_arr1_element
+    return s, longest_arr1_element, len_operator_1, len_operator_2
