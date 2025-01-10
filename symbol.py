@@ -115,7 +115,7 @@ class Mul(Node):
         op1_space = " "*op1
         op2_space = " "*(spaces-op1+op2-1)
         row1_space = " "*((op1+spaces+op2)//2)
-        return f"{row1_space}+ \n{op1_space}/{op2_space}\\\n{s}"  
+        return f"{row1_space}⋅ \n{op1_space}/{op2_space}\\\n{s}"  
 
 
 
@@ -162,7 +162,7 @@ class Expression:
 # print(tree.eval(10))
 
 x = Symbol()
-f = 2*x + x**3 + 2 * (x+3) + 2*x**4
+f = 2**x + x**3 + 2 * (x+3) + 2*x**4 + x**2
 print(f.get_tree())
 
 
