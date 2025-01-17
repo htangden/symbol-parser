@@ -11,11 +11,23 @@
 - polydiv
 
 
-**TODO diff för f^g (kräver ln)**
-- D(f(x)^g(x)) = f(x)^g(x)*(g'(x)'ln(f(x)) + f'(x)'g(x)/f(x))
+**TODO lägg till funktioner**
+- trig, abs
 
 
-**TODO lägg till comp + funktioner**
-trig, abs, ln
+**TODO förbättra printing av expression**
+- lägg bara till paranteser om nästa nod är av lägre prio
+    - i.e om Mul.left är Add, och Mul.right är sym: return((self.left)*self.right)
 
-**TODO lägg till bråktal**
+**TODO lägg till test-cases**
+
+
+```LÄNGRE I FRAMTIDEN```
+
+**TODO lägg till latex rendering**
+
+**TODO lösning av ekvationer**
+
+
+
+

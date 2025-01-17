@@ -1,4 +1,5 @@
 from newline import newline_matching
+import math
 
 class Node:
 
@@ -46,6 +47,16 @@ class Node:
 
     def __str__(self):
         pass
+
+    def __truediv__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            other = Num(other)
+        return Div(self, other)
+    
+    def __rtruediv__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            other = Num(other)
+        return Div(other, self)
 
         
 
@@ -130,6 +141,29 @@ class Mul(Node):
     def diff(self):
         return Add(Mul(self.left.diff(), self.right), Mul(self.left, self.right.diff()))
 
+class Div(Node):
+
+    def __init__(self, numer, denom):
+        self.numer = numer
+        self.denom = denom
+
+    def eval(self, x):
+        return self.numer.eval(x) / self.denom.eval(x)
+    
+    def __str__(self):
+        return f"({self.numer})/({self.denom})"
+
+    def get_tree(self):
+        s, spaces, op1, op2 = newline_matching(self.numer.get_tree(), self.denom.get_tree())
+        op1_space = " "*op1
+        op2_space = " "*(spaces-op1+op2-1)
+        row1_space = " "*((op1+spaces+op2)//2)
+        return f"{row1_space}/ \n{op1_space}/{op2_space}\\\n{s}"  
+
+    def diff(self):
+        new_numer = Add(Mul(self.numer.diff(), self.denom), Mul(Num(-1), Mul(self.numer, self.denom.diff())))
+        new_denom = Pow(self.denom, Num(2))
+        return Div(new_numer, new_denom)
 
 
 class Pow(Node):
@@ -149,16 +183,33 @@ class Pow(Node):
         op1_space = " "*op1
         op2_space = " "*(spaces-op1+op2-1)
         return f"{row1_space}^ \n{op1_space}/{op2_space}\\\n{s}"   
+    
+    def diff(self):
+        # a = Mul(self.exp.diff(), Ln(self.base))
+        # b = Div(Mul(self.exp, self.base.diff()), self.base)
+        return Mul(self, Add(Mul(self.exp.diff(), Ln(self.base)), Div(Mul(self.exp, self.base.diff()), self.base)))
 
-
-class Comp(Node):
-
-    def __init__(self, outer, inner):
-        self.outer = outer 
-        self.inner = inner
-
+class Ln(Node):
+    def __init__(self, arg: Node):
+        self.arg = arg
+    
     def eval(self, x):
-        pass
+        return math.log(self.arg.eval(x))
+    
+    def __str__(self):
+        return f"ln({self.arg})"
+    
+    def get_tree(self):
+        arg_tree = self.arg.get_tree()
+        arg_tree_arr = arg_tree.split("\n")
+        len_row = len(arg_tree_arr[0])
+        spaces = " "*(len_row//2)
+        return f"{spaces}ln \n{spaces}| \n{arg_tree}" 
+    
+    def diff(self):
+        return Div(self.arg.diff(), self.arg)
+
+
         
 
 
@@ -168,15 +219,17 @@ class Expression:
         self.tree = tree
 
 
-
+breakpoint()
 
 # tree = Pow(Add(Num(2), Num(3)), Symbol())
 # print(tree.eval(10))
 
-x = Symbol()
-f = 3*x + x + x*x
-print(f)
-print(f.diff())
+# x = Symbol()
+# f = 3*x + x + x*x
+# print(f)
+# print(f.diff())
+# print(f.diff()(3))
+
 
 
 
@@ -187,19 +240,7 @@ print(f.diff())
 #                   cos     sym(x)
 # 
 #
-#comp: 
-# exp, trig, abs
+
 #
-# mul
-# add
-# pow
-# frac
-# log_n
-# 
-# förenkling av trädet
-# 
-# f(x) = 1/x
-#
-#       
 #
 
