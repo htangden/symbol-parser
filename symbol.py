@@ -11,6 +11,9 @@ class Node:
 
     def diff(self):
         pass
+
+    def prune(self):
+        pass
     
     def __add__(self, other):
         if isinstance(other, int) or isinstance(other, float):
@@ -76,6 +79,9 @@ class Num(Node):
     
     def diff(self):
         return Num(0)
+    
+    def prune(self):
+        return self
 
 
 class Symbol(Node):
@@ -93,6 +99,9 @@ class Symbol(Node):
     
     def diff(self):
         return Num(1)
+    
+    def prune(self):
+        return self
     
     
 
@@ -117,6 +126,24 @@ class Add(Node):
 
     def diff(self):
         return Add(self.left.diff(), self.right.diff())
+    
+    def prune(self):
+        pruned_left = self.left.prune()
+        pruned_right = self.right.prune()
+
+        if isinstance(pruned_right, Num) and isinstance(pruned_left, Num):
+            return Num(pruned_left.val + pruned_right.val)
+        
+         # f(x) + 0 = f(x)
+        if isinstance(pruned_right, Num):
+            if pruned_right.val == 0:
+                return pruned_left
+        elif isinstance(pruned_left, Num):
+            if pruned_left.val == 0:
+                return pruned_right
+            
+        return Add(pruned_left, pruned_right)
+
 
 
 class Mul(Node):
@@ -140,10 +167,32 @@ class Mul(Node):
     
     def diff(self):
         return Add(Mul(self.left.diff(), self.right), Mul(self.left, self.right.diff()))
+    
+    def prune(self):
+        pruned_left = self.left.prune()
+        pruned_right = self.right.prune()
+
+
+        if isinstance(pruned_right, Num) and isinstance(pruned_left, Num):
+            return Num(pruned_left.val * pruned_right.val)
+        
+        # f(x) * 0 = 0 || f(x) * 1 = f(x)
+        if isinstance(pruned_right, Num):
+            if pruned_right.val == 0:
+                return Num(0)
+            if pruned_right.val == 1:
+                return pruned_left
+        elif isinstance(pruned_left, Num):
+            if pruned_left.val == 0:
+                return Num(0)
+            if pruned_left.val == 1:
+                return pruned_right                         
+
+        return Mul(pruned_left, pruned_right)   
 
 class Div(Node):
 
-    def __init__(self, numer, denom):
+    def __init__(self, numer: Node, denom: Node):
         self.numer = numer
         self.denom = denom
 
@@ -164,6 +213,16 @@ class Div(Node):
         new_numer = Add(Mul(self.numer.diff(), self.denom), Mul(Num(-1), Mul(self.numer, self.denom.diff())))
         new_denom = Pow(self.denom, Num(2))
         return Div(new_numer, new_denom)
+    
+    def prune(self):
+        pruned_numer = self.numer.prune()
+        pruned_denom = self.denom.prune()
+
+        if isinstance(pruned_numer, Num):
+            if pruned_numer.val == 0:
+                return Num(0)
+        
+        return Div(pruned_numer, pruned_denom)
 
 
 class Pow(Node):
@@ -185,12 +244,30 @@ class Pow(Node):
         return f"{row1_space}^ \n{op1_space}/{op2_space}\\\n{s}"   
     
     def diff(self):
-        # a = Mul(self.exp.diff(), Ln(self.base))
-        # b = Div(Mul(self.exp, self.base.diff()), self.base)
         return Mul(self, Add(Mul(self.exp.diff(), Ln(self.base)), Div(Mul(self.exp, self.base.diff()), self.base)))
+
+    def prune(self):
+        pruned_base = self.base.prune()
+        pruned_exp = self.exp.prune()
+
+        if isinstance(pruned_exp, Num):
+            if pruned_exp.val == 0:
+                return Num(1)
+            if pruned_exp.val == 1:
+                return pruned_base
+        
+        if isinstance(pruned_base, Num):
+            if pruned_base.val == 0:
+                return Num(0)
+            if pruned_base.val == 1:
+                return Num(1)
+
+        return Pow(pruned_base, pruned_exp)
 
 class Ln(Node):
     def __init__(self, arg: Node):
+        if isinstance(arg, int) or isinstance(arg, float):
+            arg = Num(arg)
         self.arg = arg
     
     def eval(self, x):
@@ -208,39 +285,15 @@ class Ln(Node):
     
     def diff(self):
         return Div(self.arg.diff(), self.arg)
+    
+    def prune(self):
+        pruned_arg = self.arg.prune()
+
+        if isinstance(pruned_arg, Num):
+            return Num(math.log(pruned_arg.val))
+        return Ln(pruned_arg)
 
 
-        
-
-
-class Expression:
-
-    def __init__(self, tree: Node):
-        self.tree = tree
 
 
 breakpoint()
-
-# tree = Pow(Add(Num(2), Num(3)), Symbol())
-# print(tree.eval(10))
-
-# x = Symbol()
-# f = 3*x + x + x*x
-# print(f)
-# print(f.diff())
-# print(f.diff()(3))
-
-
-
-
-# f(x) = 2x * exp(cos(x))
-#           mul 
-#     mul          comp
-# num(2) sym(x) exp     comp
-#                   cos     sym(x)
-# 
-#
-
-#
-#
-
