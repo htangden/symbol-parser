@@ -54,12 +54,12 @@ class Node:
     def __truediv__(self, other):
         if isinstance(other, int) or isinstance(other, float):
             other = Num(other)
-        return Div(self, other)
+        return Mul(self, Pow(other, Num(-1)))
     
     def __rtruediv__(self, other):
         if isinstance(other, int) or isinstance(other, float):
             other = Num(other)
-        return Div(other, self)
+        return Mul(other, Pow(self, Num(-1)))
 
         
 
@@ -190,39 +190,6 @@ class Mul(Node):
 
         return Mul(pruned_left, pruned_right)   
 
-class Div(Node):
-
-    def __init__(self, numer: Node, denom: Node):
-        self.numer = numer
-        self.denom = denom
-
-    def eval(self, x):
-        return self.numer.eval(x) / self.denom.eval(x)
-    
-    def __str__(self):
-        return f"({self.numer})/({self.denom})"
-
-    def get_tree(self):
-        s, spaces, op1, op2 = newline_matching(self.numer.get_tree(), self.denom.get_tree())
-        op1_space = " "*op1
-        op2_space = " "*(spaces-op1+op2-1)
-        row1_space = " "*((op1+spaces+op2)//2)
-        return f"{row1_space}/ \n{op1_space}/{op2_space}\\\n{s}"  
-
-    def diff(self):
-        new_numer = Add(Mul(self.numer.diff(), self.denom), Mul(Num(-1), Mul(self.numer, self.denom.diff())))
-        new_denom = Pow(self.denom, Num(2))
-        return Div(new_numer, new_denom)
-    
-    def prune(self):
-        pruned_numer = self.numer.prune()
-        pruned_denom = self.denom.prune()
-
-        if isinstance(pruned_numer, Num):
-            if pruned_numer.val == 0:
-                return Num(0)
-        
-        return Div(pruned_numer, pruned_denom)
 
 
 class Pow(Node):
@@ -244,7 +211,7 @@ class Pow(Node):
         return f"{row1_space}^ \n{op1_space}/{op2_space}\\\n{s}"   
     
     def diff(self):
-        return Mul(self, Add(Mul(self.exp.diff(), Ln(self.base)), Div(Mul(self.exp, self.base.diff()), self.base)))
+        return Mul(self, Add(Mul(self.exp.diff(), Ln(self.base)), Mul(Mul(self.exp, self.base.diff()), Pow(self.base, Num(-1)))))
 
     def prune(self):
         pruned_base = self.base.prune()
@@ -284,7 +251,7 @@ class Ln(Node):
         return f"{spaces}ln \n{spaces}| \n{arg_tree}" 
     
     def diff(self):
-        return Div(self.arg.diff(), self.arg)
+        return Mul(self.arg.diff(), Pow(self.arg, Num(-1)))
     
     def prune(self):
         pruned_arg = self.arg.prune()
@@ -292,8 +259,7 @@ class Ln(Node):
         if isinstance(pruned_arg, Num):
             return Num(math.log(pruned_arg.val))
         return Ln(pruned_arg)
+ 
 
-
-
-
-breakpoint()
+if __name__ == "__main__":
+    breakpoint()
