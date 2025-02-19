@@ -44,13 +44,7 @@ class Node:
         if isinstance(other, int) or isinstance(other, float):
             other = Num(other)
         return Pow(other, self)  
-
-    def __call__(self, x):
-        return self.eval(x)
-
-    def __str__(self):
-        pass
-
+    
     def __truediv__(self, other):
         if isinstance(other, int) or isinstance(other, float):
             other = Num(other)
@@ -61,7 +55,15 @@ class Node:
             other = Num(other)
         return Mul(other, Pow(self, Num(-1)))
 
-        
+    def __call__(self, x):
+        return self.eval(x)
+
+    def __str__(self):
+        pass
+
+    def __eq__(self):
+        pass
+    
 
 
 class Num(Node):
@@ -82,6 +84,11 @@ class Num(Node):
     
     def prune(self):
         return self
+    
+    def __eq__(self, other):
+        if isinstance(other, Num):
+            return self.val == other.val
+        return False
 
 
 class Symbol(Node):
@@ -102,6 +109,11 @@ class Symbol(Node):
     
     def prune(self):
         return self
+    
+    def __eq__(self, other):
+        if isinstance(other, Symbol):
+            return self.symbol == other.symbol
+        return False
     
     
 
@@ -143,6 +155,25 @@ class Add(Node):
                 return pruned_right
             
         return Add(pruned_left, pruned_right)
+    
+    def get_terms(self):
+        terms = []
+        if isinstance(self.left, Add):
+            terms.extend(self.left.get_terms())
+        else:
+            terms.append(self.left)
+
+        if isinstance(self.right, Add):
+            terms.extend(self.right.get_terms())
+        else:
+            terms.append(self.right)
+
+        return terms
+    
+    def __eq__(self, other):
+        if not isinstance(other, Add):
+            return False
+        return sorted(self.get_terms(), key=str) == sorted(other.get_terms(), key=str)
 
 
 
@@ -176,6 +207,8 @@ class Mul(Node):
         if isinstance(pruned_right, Num) and isinstance(pruned_left, Num):
             return Num(pruned_left.val * pruned_right.val)
         
+
+        
         # f(x) * 0 = 0 || f(x) * 1 = f(x)
         if isinstance(pruned_right, Num):
             if pruned_right.val == 0:
@@ -186,9 +219,36 @@ class Mul(Node):
             if pruned_left.val == 0:
                 return Num(0)
             if pruned_left.val == 1:
-                return pruned_right                         
+                return pruned_right
+        elif isinstance(pruned_left, Pow) and isinstance(pruned_right, Pow):
+            if isinstance(pruned_right.base, Symbol) and isinstance(pruned_left.base, Symbol) and pruned_right.base == pruned_left.base:
+                return Pow(pruned_left.base, Add(pruned_left.exp, pruned_right.exp))
 
         return Mul(pruned_left, pruned_right)   
+
+    def get_factors(self):
+        self_pruned = self.prune()
+
+        factors = []
+        if isinstance(self_pruned.left, Mul):
+            factors.extend(self_pruned.left.get_factors())
+        else:
+            factors.append(self_pruned.left)
+
+        if isinstance(self_pruned.right, Mul):
+            factors.extend(self_pruned.right.get_factors())
+        else:
+            factors.append(self_pruned.right)
+
+        return factors
+    
+        
+    def __eq__(self, other):
+        if not isinstance(other, Mul):
+            return False
+        print(sorted(self.get_factors(), key=str), "A", sorted(other.get_factors(), key=str))
+        return sorted(self.get_factors(), key=str) == sorted(other.get_factors(), key=str)
+
 
 
 
@@ -230,6 +290,12 @@ class Pow(Node):
                 return Num(1)
 
         return Pow(pruned_base, pruned_exp)
+    
+    def __eq__(self, other):
+        if isinstance(other, Pow):
+            return (self.base == other.base and self.exponent == other.exponent)
+        return False
+
 
 class Ln(Node):
     def __init__(self, arg: Node):
@@ -259,7 +325,13 @@ class Ln(Node):
         if isinstance(pruned_arg, Num):
             return Num(math.log(pruned_arg.val))
         return Ln(pruned_arg)
+
+    def __eq__(self, other):
+        if isinstance(other, Ln):  
+            return self.argument == other.argument
+        return False
  
 
 if __name__ == "__main__":
+    x = Symbol()
     breakpoint()

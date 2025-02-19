@@ -12,7 +12,7 @@
 - ✅ kanske lättare att fixa vid pruning om både left och right till mul är pow och har samma bas.
 
 **TODO lägg till funktioner**
-- trig, abs
+- trig, ✅ abs
 
 
 **TODO förbättra printing av expression**
