@@ -125,7 +125,7 @@ class Add(Node):
         return f"{row1_space}+ \n{op1_space}/{op2_space}\\\n{s}"  
 
     def diff(self):
-        return Add(self.left.diff(), self.right.diff())
+        return Add(self.left.diff(), self.right.diff()).prune()
     
     def prune(self):
         pruned_left = self.left.prune()
@@ -166,7 +166,7 @@ class Mul(Node):
         return f"{row1_space}⋅ \n{op1_space}/{op2_space}\\\n{s}"  
     
     def diff(self):
-        return Add(Mul(self.left.diff(), self.right), Mul(self.left, self.right.diff()))
+        return Add(Mul(self.left.diff(), self.right), Mul(self.left, self.right.diff())).prune()
     
     def prune(self):
         pruned_left = self.left.prune()
@@ -211,7 +211,7 @@ class Pow(Node):
         return f"{row1_space}^ \n{op1_space}/{op2_space}\\\n{s}"   
     
     def diff(self):
-        return Mul(self, Add(Mul(self.exp.diff(), Ln(self.base)), Mul(Mul(self.exp, self.base.diff()), Pow(self.base, Num(-1)))))
+        return Mul(self, Add(Mul(self.exp.diff(), Ln(self.base)), Mul(Mul(self.exp, self.base.diff()), Pow(self.base, Num(-1))))).prune()
 
     def prune(self):
         pruned_base = self.base.prune()
@@ -251,7 +251,7 @@ class Ln(Node):
         return f"{spaces}ln \n{spaces}| \n{arg_tree}" 
     
     def diff(self):
-        return Mul(self.arg.diff(), Pow(self.arg, Num(-1)))
+        return Mul(self.arg.diff(), Pow(self.arg, Num(-1))).prune()
     
     def prune(self):
         pruned_arg = self.arg.prune()
@@ -262,4 +262,5 @@ class Ln(Node):
  
 
 if __name__ == "__main__":
+    x = Symbol()
     breakpoint()
