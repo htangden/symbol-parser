@@ -19,6 +19,8 @@
 - lägg bara till paranteser om nästa nod är av lägre prio
     - i.e om Mul.left är Add, och Mul.right är sym: return((self.left)*self.right)
 
+**TODO lägg till simpel plotting**
+
 **TODO lägg till test-cases**
 
 
@@ -27,7 +29,5 @@
 **TODO lägg till latex rendering**
 
 **TODO lösning av ekvationer**
-
-
 
 
