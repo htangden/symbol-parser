@@ -25,6 +25,16 @@ class Node:
             other = Num(other)
         return Add(other, self)
 
+    def __sub__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            other = Num(other)
+        return Add(self, Mul(-1, other))
+
+    def __rsub__(self, other):
+        if isinstance(other, int) or isinstance(other, float):
+            other = Num(other)     
+        return Add(Mul(-1, other), self)   
+
     def __mul__(self, other):
         if isinstance(other, int) or isinstance(other, float):
             other = Num(other)
@@ -63,6 +73,9 @@ class Node:
 
     def __eq__(self):
         pass
+
+    def __repr__(self):
+        return f"Function: {self}"
     
 
 
@@ -71,7 +84,7 @@ class Num(Node):
         self.val = val
 
     def eval(self, x):
-        return self.val
+        return self.val * x**0
     
     def __str__(self):
         return f"{self.val}"

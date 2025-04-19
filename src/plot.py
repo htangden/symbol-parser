@@ -1,12 +1,12 @@
 import symbol
+from symbol import Symbol
 import numpy as np
 from PIL import Image
 
 
 class Frame:
-    def __init__(self, x_range: list[float], name: str = "plot.png", size = [480, 720]):
+    def __init__(self, name: str = "frame", size = [480, 720]):
         self.name = name
-        self.x_range = x_range
         self.functions: list = [] 
         self.size = size  
         self.axis_width = 3
@@ -15,16 +15,25 @@ class Frame:
     def __add__(self, function):
         self.functions.append(function)
 
-    def plot(self):
+    def __sub__(self, function):
+        try:
+            self.functions.remove(function)
+        except ValueError:
+            print("No such function in frame.")
+
+    def __repr__(self):
+        return f"Frame-object. Current functions:\n{"\n".join([str(func) for func in self.functions])}"
+
+    def plot(self, x_range: list[float]):
+
         image_array = np.zeros(self.size, dtype=np.uint8)
-        image_array = self.plot_axis(image_array)
         
         if self.functions:
-            function_values = self.get_function_values()
+            function_values = self.get_function_values(x_range)
             image_array = self.plot_function_values(function_values, image_array)
 
+        image_array = self.plot_axis(image_array)
         image = Image.fromarray(image_array, mode="L")
-        image.save(self.name)
         image.show()
 
     def plot_axis(self, image_array: np.ndarray):
@@ -36,9 +45,9 @@ class Frame:
 
         return image_array
 
-    def get_function_values(self):
+    def get_function_values(self, x_range):
         values = []
-        x_values = np.linspace(self.x_range[0], self.x_range[1], round(self.size[1] * (1 - self.dead_space)))
+        x_values = np.linspace(x_range[0], x_range[1], round(self.size[1] * (1 - self.dead_space)))
         for function in self.functions:
             values.append(list(function(x_values)))
         return values
@@ -57,6 +66,11 @@ class Frame:
             for i, value in enumerate(func_vals):
                 height = self.frac_to_index((value-min_value)/(max_value-min_value))
                 image_array[height, i+round(self.size[1]*self.dead_space)] = 255
+                try:
+                    image_array[height-1, i+round(self.size[1]*self.dead_space)] = 127
+                    image_array[height+1, i+round(self.size[1]*self.dead_space)] = 127
+                except IndexError:
+                    pass
 
         return image_array
 
@@ -65,12 +79,12 @@ class Frame:
 
     
 if __name__ == "__main__":
-    x = symbol.Symbol()
+    x = Symbol()
 
     g = -5*x + 3**x
     g_prime = g.diff()
 
     fr = Frame([-1, 2])
-    fr + g_prime
     fr + g
+    fr + g_prime
     fr.plot()
