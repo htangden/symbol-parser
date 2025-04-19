@@ -2,6 +2,24 @@
 
 The symbol-parser is meant to create, evaluate and differentiate single variable algebraic expressions.
 
+### Installation and setup
+
+Create a virtual environment with
+<pre>
+  python3 -m venv venv
+</pre>
+
+and activate it by executing
+<pre>
+  source venv/bin/activate
+</pre>
+
+Install the required packages
+<pre>
+  pip install -r requirements.txt
+</pre>
+
+
 ### Creating a variable
 
 Creating a variable is done using the `Symbol` class. 
