@@ -23,6 +23,10 @@
 
 **TODO lägg till test-cases**
 
+**TODO global formatering för projektet**
+
+**TODO lägg till stöd för parametriserade kurvor**
+
 
 ```LÄNGRE I FRAMTIDEN```
 
